@@ -6,8 +6,8 @@ On Windows, create a project virtual environment in the .venv folder.
 
 ```shell
 
-py -m venv .venv
-.venv\Scripts\Activate
+py -m venv .venv   
+.venv\Scripts\Activate #activate virtual environment
 py -m pip install -r requirements.txt
 
 ```
