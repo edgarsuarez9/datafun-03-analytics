@@ -1,9 +1,8 @@
-"""Project Demonstrates skill in fetching data, processing, and git push command"""
-
 # Standard Library imports
 import csv
 import json
 import pathlib
+from collections import Counter, defaultdict
 import pandas as pd
 
 # External library imports (requires virtual environment)
@@ -11,10 +10,11 @@ import requests
 
 # Local module imports
 import suarez_projsetup  
-import utils_suarez      
+import utils_suarez  
 
 # Data Acquisition
 def fetch_and_write_txt_data(folder_name, filename, url):
+    '''Retrieves data from specified URL and writes files in folder'''
     response = requests.get(url)
     if response.status_code == 200:
         write_txt_file(folder_name, filename, response.text)
@@ -22,6 +22,7 @@ def fetch_and_write_txt_data(folder_name, filename, url):
         print(f"Failed to fetch TXT data: {response.status_code}")
 
 def fetch_and_write_csv_data(folder_name, filename, url):
+    '''Retrieves CSV data from specified URL writes it to a file in folder'''
     response = requests.get(url)
     if response.status_code == 200:
         write_csv_file(folder_name, filename, response.content)
@@ -29,6 +30,7 @@ def fetch_and_write_csv_data(folder_name, filename, url):
         print(f"Failed to fetch CSV data: {response.status_code}")
 
 def fetch_and_write_json_data(folder_name, filename, url):
+    '''Retrieves JSON Data from specified URL writes it to a file in folder'''
     response = requests.get(url)
     if response.status_code == 200:
         write_json_file(folder_name, filename, response.text)
@@ -36,6 +38,7 @@ def fetch_and_write_json_data(folder_name, filename, url):
         print(f"Failed to fetch JSON data: {response.status_code}")
 
 def fetch_and_write_excel_data(folder_name, filename, url):
+    '''Retrieves EXCEL Data from specified URL writes it to a file in folder'''
     response = requests.get(url)
     if response.status_code == 200:
         write_excel_file(folder_name, filename, response.content)
@@ -44,38 +47,55 @@ def fetch_and_write_excel_data(folder_name, filename, url):
 
 # Write Data
 def write_txt_file(folder_name, filename, data):
+    '''Saves Text Data to a file'''
     file_path = pathlib.Path(folder_name) / filename
     file_path.write_text(data)
     print(f"Text data saved to {file_path}")
 
 def write_csv_file(folder_name, filename, data):
+    '''Saves CSV data to a file'''
     file_path = pathlib.Path(folder_name) / filename
     with open(file_path, 'wb') as file:
         file.write(data)
     print(f"CSV data saved to {file_path}")
 
 def write_json_file(folder_name, filename, data):
+    '''Saves JSON data to a file'''
     file_path = pathlib.Path(folder_name) / filename
     with open(file_path, 'w') as file:
         file.write(data)
     print(f"JSON data saved to {file_path}")
 
 def write_excel_file(folder_name, filename, data):
+    '''Saves Excel File Data'''
     file_path = pathlib.Path(folder_name) / filename
     with open(file_path, 'wb') as file:
         file.write(data)
     print(f"Excel data saved to {file_path}")
 
 # Process and Generate Output
+
 def process_txt_file(folder_name, filename, result_filename):
     file_path = pathlib.Path(folder_name) / filename
     result_path = pathlib.Path(folder_name) / result_filename
+    '''Reads content of a text file, processes with lists and sets, and handles exceptions'''
     try:
         with open(file_path, 'r') as file:
-            data = file.read()
-        # Process data if needed
+            text = file.read()
+        
+        words = text.split()
+        word_count = len(words)
+        word_freq = Counter(words)
+        unique_words = set(words)
+        unique_word_count = len(unique_words)
+        
         with open(result_path, 'w') as file:
-            file.write(data)  # For demonstration, just writing back the same data
+            file.write(f"Total word count: {word_count}\n")
+            file.write(f"Unique word count: {unique_word_count}\n")
+            file.write("Word frequencies:\n")
+            for word, freq in word_freq.most_common():
+                file.write(f"{word}: {freq}\n")
+        
         print(f"Processed text data saved to {result_path}")
     except Exception as e:
         print(f"Error processing text file: {e}")
@@ -83,45 +103,77 @@ def process_txt_file(folder_name, filename, result_filename):
 def process_csv_file(folder_name, filename, result_filename):
     file_path = pathlib.Path(folder_name) / filename
     result_path = pathlib.Path(folder_name) / result_filename
+    '''Reads content of a csv file, processes with tuples, and handles exceptions'''
     try:
         with open(file_path, 'rb') as file:
             data = file.read().decode('utf-8').splitlines()
         reader = csv.reader(data)
+        headers = next(reader)
         rows = [row for row in reader]
-        # Process data if needed
+        
+        column_data = defaultdict(list)
+        for row in rows:
+            for header, value in zip(headers, row):
+                column_data[header].append(value)
+        
         with open(result_path, 'w') as file:
-            writer = csv.writer(file)
-            writer.writerows(rows)
+            for header, values in column_data.items():
+                file.write(f"Column: {header}\n")
+                file.write(f"Number of entries: {len(values)}\n")
+                file.write(f"Sample values: {', '.join(values[:5])}\n")  # Show sample of up to 5 values
+                file.write("\n")
+        
         print(f"Processed CSV data saved to {result_path}")
     except Exception as e:
         print(f"Error processing CSV file: {e}")
 
-def process_json_file(folder_name, filename, result_filename):
-    file_path = pathlib.Path(folder_name) / filename
-    result_path = pathlib.Path(folder_name) / result_filename
-    try:
-        with open(file_path, 'r') as file:
-            data = json.load(file)
-        # Process data if needed
-        with open(result_path, 'w') as file:
-            json.dump(data, file, indent=4)
-        print(f"Processed JSON data saved to {result_path}")
-    except Exception as e:
-        print(f"Error processing JSON file: {e}")
-
 def process_excel_file(folder_name, filename, result_filename):
     file_path = pathlib.Path(folder_name) / filename
     result_path = pathlib.Path(folder_name) / result_filename
+    '''Reads content of an Excel file, processes with pandas, and handles exceptions'''
     try:
         data = pd.read_excel(file_path, sheet_name=None)
         with open(result_path, 'w') as file:
             for sheet_name, df in data.items():
                 file.write(f"Sheet: {sheet_name}\n")
-                file.write(df.to_csv(index=False))
+                file.write(df.describe(include='all').to_csv())
                 file.write("\n")
         print(f"Processed Excel data saved to {result_path}")
     except Exception as e:
         print(f"Error processing Excel file: {e}")
+
+def process_json_file(folder_name, filename, result_filename):
+    file_path = pathlib.Path(folder_name) / filename
+    result_path = pathlib.Path(folder_name) / result_filename
+    '''Reads content of a JSON file, processes with dictionaries, and handles exceptions'''
+    try:
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+        
+        insights = []
+        def extract_info(d, indent=0):
+            for key, value in d.items():
+                if isinstance(value, dict):
+                    insights.append(f"{' ' * indent}{key}:")
+                    extract_info(value, indent + 2)
+                elif isinstance(value, list):
+                    insights.append(f"{' ' * indent}{key}:")
+                    for item in value:
+                        if isinstance(item, dict):
+                            extract_info(item, indent + 2)
+                        else:
+                            insights.append(f"{' ' * (indent + 2)}- {item}")
+                else:
+                    insights.append(f"{' ' * indent}{key}: {value}")
+
+        extract_info(data)
+        
+        with open(result_path, 'w') as file:
+            file.write("\n".join(insights))
+        
+        print(f"Processed JSON data saved to {result_path}")
+    except Exception as e:
+        print(f"Error processing JSON file: {e}")
 
 # Main Function
 def main():
