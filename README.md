@@ -1,4 +1,4 @@
-# datafun-03-analytics
+# Data Analysis and Utilization
 
 ## Create Project Virtual Environment
 
