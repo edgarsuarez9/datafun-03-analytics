@@ -1,3 +1,7 @@
+"""This project demonstrates ability to fetch data from the web, manage virutal environment, and work with data"""
+
+
+
 # Standard Library imports
 import csv
 import json
@@ -120,7 +124,7 @@ def process_csv_file(folder_name, filename, result_filename):
             for header, values in column_data.items():
                 file.write(f"Column: {header}\n")
                 file.write(f"Number of entries: {len(values)}\n")
-                file.write(f"Sample values: {', '.join(values[:5])}\n")  # Show sample of up to 5 values
+                file.write(f"Sample values: {', '.join(values[:5])}\n")  
                 file.write("\n")
         
         print(f"Processed CSV data saved to {result_path}")
